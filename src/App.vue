@@ -22,7 +22,7 @@ const getRecommendations = async () => {
     }
 
     // POSTメソッドに変更し、リクエストボディにタイトルリストを詰める
-        const response = await axios.post('https://manga-recommend-api.onrender.com/api/v1/recommendations', {
+        const response = await axios.post('manga-recommend-api-production.up.railway.app', {
       titles: titles
     });
     responseData.value = response.data;
