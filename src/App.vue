@@ -99,11 +99,14 @@ button {
   padding: 10px 20px;
   font-size: 16px;
   color: white;
-  background-color: #007bff;
+  background-color: #007bff; /* 青系の背景色 */
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s; /* ホバー時の色変化を滑らかに */
+  /* ボタンを中央に配置するためのスタイル (追加) */
+  display: block;
+  margin: 20px auto 0; /* 上下に余白、左右中央揃え */
 }
 
 button:hover {
