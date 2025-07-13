@@ -2,8 +2,9 @@
 import { reactive, onMounted } from 'vue';
 import axios from 'axios';
 import HistoryModal from './components/HistoryModal.vue';
-import RecommendationForm from './components/RecommendationForm.vue'; //
+import RecommendationForm from './components/RecommendationForm.vue';
 import RecommendationResult from './components/RecommendationResult.vue';
+import TheHeader from './components/TheHeader.vue';
 import { loadHistory, saveHistory, type HistoryItem } from './utils/history';
 
 const state = reactive({
@@ -34,27 +35,53 @@ const handleGetRecommendations = async (formData: {
 
     state.latestResponse = response.data;
 
-    // ... (履歴保存のロジックは同じ)
+    const newHistory = [
+      {
+        id: Date.now(),
+        inputTitles: formData.titles, // formDataから取得
+        recommendations: response.data.recommendations,
+        date: new Date().toLocaleString('ja-JP'),
+      },
+      ...state.historyList,
+    ];
+    state.historyList = newHistory.slice(0, 10);
+    saveHistory(state.historyList);
   } catch (error) {
-    // ... (エラー処理は同じ)
+    console.error('データの取得に失敗しました:', error);
+    state.latestResponse = {
+      recommendations: [
+        { title: 'エラー', description: '取得に失敗しました。' },
+      ],
+    };
   } finally {
     state.isLoading = false;
   }
 };
+const openHistoryModal = () => {
+  state.isHistoryModalOpen = true;
+};
 </script>
 
 <template>
+  <TheHeader @show-history="openHistoryModal" />
   <div class="container">
     <div v-if="state.isLoading" class="loading-overlay">
       <span class="loader"></span>
     </div>
-
     <RecommendationForm @submit="handleGetRecommendations" />
     <RecommendationResult
       v-if="state.latestResponse"
       :recommendations="state.latestResponse.recommendations"
     />
   </div>
+
+  <Transition name="modal-fade">
+    <HistoryModal
+      v-if="state.isHistoryModalOpen"
+      :history="state.historyList"
+      @close="state.isHistoryModalOpen = false"
+    />
+  </Transition>
 </template>
 
 <style scoped>
