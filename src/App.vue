@@ -4,6 +4,7 @@ import axios from 'axios';
 import HistoryModal from './components/HistoryModal.vue';
 import RecommendationForm from './components/RecommendationForm.vue';
 import RecommendationResult from './components/RecommendationResult.vue';
+import IntroductionText from './components/IntroductionText.vue';
 import TheHeader from './components/TheHeader.vue';
 import { loadHistory, saveHistory, type HistoryItem } from './utils/history';
 
@@ -35,22 +36,39 @@ const handleGetRecommendations = async (formData: {
 
     state.latestResponse = response.data;
 
+    // 1. 新しいデータ構造から、すべてのrecommendationsを一つの配列にまとめる
+    const allRecommendations = response.data.categories.flatMap(
+      (category: any) => category.recommendations
+    );
+
+    // 2. 修正したデータで履歴オブジェクトを作成
     const newHistory = [
       {
         id: Date.now(),
-        inputTitles: formData.titles, // formDataから取得
-        recommendations: response.data.recommendations,
+        inputTitles: formData.titles,
+        recommendations: allRecommendations, // ここを修正！
         date: new Date().toLocaleString('ja-JP'),
       },
       ...state.historyList,
     ];
+
     state.historyList = newHistory.slice(0, 10);
     saveHistory(state.historyList);
   } catch (error) {
     console.error('データの取得に失敗しました:', error);
+    // ▼ エラー時のデータ構造を正常時と合わせる ▼
     state.latestResponse = {
-      recommendations: [
-        { title: 'エラー', description: '取得に失敗しました。' },
+      introduction: 'エラー', // introductionも追加
+      categories: [
+        {
+          categoryTitle: 'エラー',
+          recommendations: [
+            {
+              title: '取得に失敗しました',
+              description: '時間をおいて再度お試しください。',
+            },
+          ],
+        },
       ],
     };
   } finally {
@@ -65,14 +83,17 @@ const openHistoryModal = () => {
 <template>
   <TheHeader @show-history="openHistoryModal" />
   <div class="container">
-    <div v-if="state.isLoading" class="loading-overlay">
-      <span class="loader"></span>
-    </div>
     <RecommendationForm @submit="handleGetRecommendations" />
-    <RecommendationResult
-      v-if="state.latestResponse"
-      :recommendations="state.latestResponse.recommendations"
-    />
+    <div v-if="state.latestResponse" class="results-container">
+      <IntroductionText
+        v-if="state.latestResponse.introduction"
+        :text="state.latestResponse.introduction"
+      />
+      <RecommendationResult
+        v-if="state.latestResponse.categories"
+        :categories="state.latestResponse.categories"
+      />
+    </div>
   </div>
 
   <Transition name="modal-fade">
@@ -85,8 +106,6 @@ const openHistoryModal = () => {
 </template>
 
 <style scoped>
-/* bodyのスタイルはグローバルなmain.cssに移動したので削除 */
-
 .container {
   max-width: 800px;
   margin: 40px auto;

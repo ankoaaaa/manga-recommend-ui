@@ -13,7 +13,6 @@ const emit = defineEmits(['show-history']);
 </template>
 
 <style scoped>
-/* App.vueから、ヘッダー関連のスタイルをここに移動 */
 .site-header {
   display: flex;
   justify-content: space-between;

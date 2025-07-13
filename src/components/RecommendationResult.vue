@@ -1,35 +1,48 @@
 <script setup lang="ts">
-// このコンポーネントが受け取るデータの型を定義
 interface Manga {
   title: string;
   description: string;
   interpretation?: string;
 }
-
-// 親コンポーネント(App.vue)からデータを受け取る準備
-defineProps<{
+interface Category {
+  categoryTitle: string;
   recommendations: Manga[];
+}
+defineProps<{
+  categories: Category[];
 }>();
 </script>
 
 <template>
   <div class="response-area">
-    <h2>あなたへのおすすめ</h2>
-    <ul>
-      <li v-for="manga in recommendations" :key="manga.title">
-        <h3>{{ manga.title }}</h3>
-        <p>{{ manga.description }}</p>
-
-        <div v-if="manga.interpretation" class="interpretation-box">
-          <p><strong>AIの推しポイント:</strong> {{ manga.interpretation }}</p>
-        </div>
-      </li>
-    </ul>
+    <div
+      v-for="category in categories"
+      :key="category.categoryTitle"
+      class="category-section"
+    >
+      <h2>{{ category.categoryTitle }}</h2>
+      <ul>
+        <li v-for="manga in category.recommendations" :key="manga.title">
+          <h3>{{ manga.title }}</h3>
+          <p>{{ manga.description }}</p>
+          <div v-if="manga.interpretation" class="interpretation-box">
+            <p><strong>AIの推しポイント:</strong> {{ manga.interpretation }}</p>
+          </div>
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
-
 <style scoped>
-/* App.vueから、response-areaとliのスタイルをここに移動 */
+.category-section {
+  margin-bottom: 40px;
+}
+.category-section h2 {
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 8px;
+  margin-bottom: 20px;
+}
+
 .response-area {
   margin-top: 20px;
   text-align: left;

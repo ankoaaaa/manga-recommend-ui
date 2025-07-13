@@ -13,7 +13,7 @@ const emit = defineEmits(['close']);
 const uniqueMangaTitles = computed(() => {
   // 1. すべての履歴から、おすすめされた漫画のタイトルだけを一つの配列にまとめる
   const allTitles = props.history.flatMap((item) =>
-    item.recommendations.map((manga) => manga.title)
+    item.recommendations ? item.recommendations.map((manga) => manga.title) : []
   );
 
   // 2. Setを使って重複を排除し、再び配列に戻す
