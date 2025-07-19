@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ref } from 'vue';
+
 interface Manga {
   title: string;
   description: string;
@@ -10,9 +12,34 @@ interface Category {
   categoryTitle: string;
   recommendations: Manga[];
 }
-defineProps<{
+const props = defineProps<{
   categories: Category[];
 }>();
+
+const emit = defineEmits(['manga-feedback', 'category-feedback']);
+
+const selectedFeedback = ref<Record<string, 'good' | 'bad'>>({});
+const onMangaFeedback = (title: string, evaluation: 'good' | 'bad') => {
+  // すでに同じ評価が選択されていたら、選択を解除
+  if (selectedFeedback.value[title] === evaluation) {
+    delete selectedFeedback.value[title];
+    emit('manga-feedback', { title, evaluation: 'none' }); // 'none'で解除を通知
+  } else {
+    selectedFeedback.value[title] = evaluation;
+    emit('manga-feedback', { title, evaluation });
+  }
+};
+
+// カテゴリ評価も同様に
+const onCategoryFeedback = (title: string, evaluation: 'good' | 'bad') => {
+  if (selectedFeedback.value[title] === evaluation) {
+    delete selectedFeedback.value[title];
+    emit('category-feedback', { title, evaluation: 'none' });
+  } else {
+    selectedFeedback.value[title] = evaluation;
+    emit('category-feedback', { title, evaluation });
+  }
+};
 </script>
 
 <template>
@@ -22,7 +49,33 @@ defineProps<{
       :key="category.categoryTitle"
       class="category-section"
     >
-      <h2>{{ category.categoryTitle }}</h2>
+      <div class="category-header">
+        <h2>
+          {{ category.categoryTitle }}
+          <div class="feedback-buttons">
+            <button
+              @click="onCategoryFeedback(category.categoryTitle, 'good')"
+              :class="{
+                selected: selectedFeedback[category.categoryTitle] === 'good',
+              }"
+              title="この切り口は良い"
+            >
+              👍
+            </button>
+            <button
+              @click="onCategoryFeedback(category.categoryTitle, 'bad')"
+              :class="{
+                selected: selectedFeedback[category.categoryTitle] === 'bad',
+              }"
+              class="bad"
+              title="この切り口は違う"
+            >
+              👎
+            </button>
+          </div>
+        </h2>
+      </div>
+
       <ul>
         <li v-for="manga in category.recommendations" :key="manga.title">
           <h3>{{ manga.title }}</h3>
@@ -33,6 +86,23 @@ defineProps<{
           <p>{{ manga.description }}</p>
           <div v-if="manga.interpretation" class="interpretation-box">
             <p><strong>AIの推しポイント:</strong> {{ manga.interpretation }}</p>
+          </div>
+          <div class="feedback-buttons">
+            <button
+              @click="onMangaFeedback(manga.title, 'good')"
+              :class="{ selected: selectedFeedback[manga.title] === 'good' }"
+              title="この方向でもっと探す"
+            >
+              👍
+            </button>
+            <button
+              @click="onMangaFeedback(manga.title, 'bad')"
+              :class="{ selected: selectedFeedback[manga.title] === 'bad' }"
+              class="bad"
+              title="これは好みじゃない"
+            >
+              👎
+            </button>
           </div>
         </li>
       </ul>
@@ -96,5 +166,53 @@ li p {
 }
 .manga-meta span {
   margin-right: 15px;
+}
+
+.category-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.feedback-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 15px;
+}
+
+/* カテゴリヘッダー内のボタンは小さくする */
+.category-header .feedback-buttons {
+  margin-top: 0;
+}
+
+.feedback-buttons button {
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 20px; /* 丸いボタンに */
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.feedback-buttons button:hover {
+  background-color: #e0e0e0;
+  transform: scale(1.1);
+}
+
+.feedback-buttons button.bad {
+  /* 悪い評価ボタンのスタイル（任意） */
+}
+.feedback-buttons button.selected {
+  background-color: #007bff; /* 例: ポジティブな色 */
+  border-color: #0056b3;
+  color: white;
+}
+
+.feedback-buttons button.bad.selected {
+  background-color: #dc3545; /* 例: ネガティブな色 */
+  border-color: #c82333;
+  color: white;
 }
 </style>

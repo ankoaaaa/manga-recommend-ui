@@ -8,12 +8,21 @@ import IntroductionText from './components/IntroductionText.vue';
 import TheHeader from './components/TheHeader.vue';
 import { loadHistory, saveHistory, type HistoryItem } from './utils/history';
 
+// フィードバックの型を定義
+interface Feedback {
+  title: string;
+  evaluation: 'good' | 'bad';
+}
+
 const state = reactive({
+  initialFormData: null as any, // 最初の検索条件を保存する場所
   latestResponse: null as any,
   historyList: [] as HistoryItem[],
   isLoading: false,
   isHistoryModalOpen: false,
   loadingMessage: '',
+  mangaFeedback: [] as Feedback[], // 漫画へのフィードバック
+  categoryFeedback: [] as Feedback[], // カテゴリへのフィードバック
 });
 
 const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/api/v1/recommendations`;
@@ -22,45 +31,117 @@ onMounted(() => {
   state.historyList = loadHistory();
 });
 
-// RecommendationFormからデータを受け取ってAPIを呼び出す関数
-const handleGetRecommendations = async (formData: {
-  titles: string[];
-  reason: string;
+// 最初の検索を行う関数
+const handleGetRecommendations = async (formData: any) => {
+  // 新しい検索なので、過去のフィードバックはリセット
+  state.mangaFeedback = [];
+  state.categoryFeedback = [];
+  // 最初の検索条件をstateに保存
+  state.initialFormData = formData;
+
+  await executeSearch(formData, true); // isFirstSearchフラグをtrueに
+};
+
+// 絞り込み検索を行う関数
+const handleRefineSearch = async () => {
+  if (state.initialFormData) {
+    // 保存しておいた最初の検索条件を使い、isFirstSearchフラグはfalseに
+    await executeSearch(state.initialFormData, false);
+  } else {
+    alert('まずは最初の検索を実行してください。');
+  }
+};
+
+// 漫画へのフィードバックを処理する関数
+const handleMangaFeedback = (feedback: {
+  title: string;
+  evaluation: 'good' | 'bad' | 'none';
 }) => {
-  state.loadingMessage = 'AIがあなたにぴったりの漫画を選んでいます...';
+  const index = state.mangaFeedback.findIndex(
+    (f) => f.title === feedback.title
+  );
+
+  // 評価が'none'なら、リストから削除
+  if (feedback.evaluation === 'none') {
+    if (index > -1) state.mangaFeedback.splice(index, 1);
+    return;
+  }
+
+  if (index > -1) {
+    state.mangaFeedback[index] = feedback;
+  } else {
+    state.mangaFeedback.push(feedback);
+  }
+};
+
+// カテゴリへのフィードバックを処理する関数
+const handleCategoryFeedback = (feedback: {
+  title: string;
+  evaluation: 'good' | 'bad' | 'none';
+}) => {
+  const index = state.categoryFeedback.findIndex(
+    (f) => f.title === feedback.title
+  );
+
+  // 評価が'none'なら、リストから削除
+  if (feedback.evaluation === 'none') {
+    if (index > -1) state.categoryFeedback.splice(index, 1);
+    return;
+  }
+
+  if (index > -1) {
+    state.categoryFeedback[index] = feedback;
+  } else {
+    state.categoryFeedback.push(feedback);
+  }
+};
+
+// API呼び出しとレスポンス処理を共通化
+const executeSearch = async (formData: any, isFirstSearch: boolean) => {
+  const messages = [
+    'AIがあなたにぴったりの漫画を選んでいます...',
+    '膨大な作品リストから検索中...',
+    'あなたの好みを分析しています...',
+    '隠れた名作を探しています...',
+  ];
+  state.loadingMessage = messages[Math.floor(Math.random() * messages.length)];
   state.isLoading = true;
   state.latestResponse = null;
-  try {
-    const response = await axios.post(apiUrl, {
-      titles: formData.titles,
-      reason: formData.reason,
-    });
 
+  try {
+    const url = isFirstSearch ? apiUrl : `${apiUrl}/refine`;
+    const requestData = isFirstSearch
+      ? formData
+      : {
+          initialRequest: formData,
+          mangaFeedback: state.mangaFeedback,
+          categoryFeedback: state.categoryFeedback,
+        };
+
+    const response = await axios.post(url, requestData);
     state.latestResponse = response.data;
 
-    // 1. 新しいデータ構造から、すべてのrecommendationsを一つの配列にまとめる
-    const allRecommendations = response.data.categories.flatMap(
-      (category: any) => category.recommendations
-    );
-
-    // 2. 修正したデータで履歴オブジェクトを作成
-    const newHistory = [
-      {
-        id: Date.now(),
-        inputTitles: formData.titles,
-        recommendations: allRecommendations, // ここを修正！
-        date: new Date().toLocaleString('ja-JP'),
-      },
-      ...state.historyList,
-    ];
-
-    state.historyList = newHistory.slice(0, 10);
-    saveHistory(state.historyList);
+    // 履歴保存ロジック（変更なし）
+    if (response.data && response.data.categories) {
+      const allRecommendations = response.data.categories.flatMap(
+        (category: any) => category.recommendations
+      );
+      const newHistory = [
+        {
+          id: Date.now(),
+          inputTitles: formData.titles,
+          recommendations: allRecommendations,
+          date: new Date().toLocaleString('ja-JP'),
+        },
+        ...state.historyList,
+      ];
+      state.historyList = newHistory.slice(0, 10);
+      saveHistory(state.historyList);
+    }
   } catch (error) {
     console.error('データの取得に失敗しました:', error);
-    // ▼ エラー時のデータ構造を正常時と合わせる ▼
     state.latestResponse = {
-      introduction: 'エラー', // introductionも追加
+      introduction: 'エラーが発生しました',
       categories: [
         {
           categoryTitle: 'エラー',
@@ -77,6 +158,7 @@ const handleGetRecommendations = async (formData: {
     state.isLoading = false;
   }
 };
+
 const openHistoryModal = () => {
   state.isHistoryModalOpen = true;
 };
@@ -94,7 +176,17 @@ const openHistoryModal = () => {
       <RecommendationResult
         v-if="state.latestResponse.categories"
         :categories="state.latestResponse.categories"
+        @manga-feedback="handleMangaFeedback"
+        @category-feedback="handleCategoryFeedback"
       />
+      <div
+        v-if="
+          state.mangaFeedback.length > 0 || state.categoryFeedback.length > 0
+        "
+        class="button-group"
+      >
+        <button @click="handleRefineSearch">もっと好みに近づける</button>
+      </div>
     </div>
   </div>
 
