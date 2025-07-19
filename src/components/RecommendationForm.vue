@@ -44,50 +44,50 @@ const handleSubmit = () => {
 </script>
 
 <template>
-  <div class="input-group"></div>
-
   <div class="filter-group">
-    <div class="filter-column">
-      <div class="filter-item">
-        <label>あなたの年代:</label>
-        <select v-model="formData.userInfo.age">
-          <option value="all">指定なし</option>
-          <option value="10s">10代</option>
-          <option value="20s">20代</option>
-          <option value="30s">30代</option>
-          <option value="over40">40代以上</option>
-        </select>
+    <h4 class="filter-title">絞り込み条件</h4>
+    <div class="filter-columns">
+      <div class="filter-column">
+        <div class="filter-item">
+          <label>あなたの年代:</label>
+          <select v-model="formData.userInfo.age">
+            <option value="all">指定なし</option>
+            <option value="10s">10代</option>
+            <option value="20s">20代</option>
+            <option value="30s">30代</option>
+            <option value="over40">40代以上</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>あなたの性別:</label>
+          <select v-model="formData.userInfo.gender">
+            <option value="all">指定なし</option>
+            <option value="male">男性</option>
+            <option value="female">女性</option>
+          </select>
+        </div>
       </div>
-      <div class="filter-item">
-        <label>あなたの性別:</label>
-        <select v-model="formData.userInfo.gender">
-          <option value="all">指定なし</option>
-          <option value="male">男性</option>
-          <option value="female">女性</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="filter-column">
-      <div class="filter-item">
-        <label>おすすめしてほしい巻数:</label>
-        <select v-model="formData.volume">
-          <option value="all">すべて</option>
-          <option value="under_10">10巻未満</option>
-          <option value="under_20">20巻未満</option>
-          <option value="under_30">30巻未満</option>
-          <option value="over_30">30巻以上</option>
-        </select>
-      </div>
-      <div class="filter-item">
-        <label>おすすめしてほしい年代:</label>
-        <select v-model="formData.era">
-          <option value="all">すべて</option>
-          <option value="over_2020y">2020年代～</option>
-          <option value="over_2010y">2010年代～</option>
-          <option value="over_2000y">2000年代～</option>
-          <option value="old">～2000年代</option>
-        </select>
+      <div class="filter-column">
+        <div class="filter-item">
+          <label>おすすめしてほしい巻数:</label>
+          <select v-model="formData.volume">
+            <option value="all">すべて</option>
+            <option value="under_10">10巻未満</option>
+            <option value="under_20">20巻未満</option>
+            <option value="under_30">30巻未満</option>
+            <option value="over_30">30巻以上</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>おすすめしてほしい年代:</label>
+          <select v-model="formData.era">
+            <option value="all">すべて</option>
+            <option value="over_2020y">2020年代～</option>
+            <option value="over_2010y">2010年代～</option>
+            <option value="over_2000y">2000年代～</option>
+            <option value="old">～2000年代</option>
+          </select>
+        </div>
       </div>
     </div>
   </div>
@@ -114,7 +114,7 @@ const handleSubmit = () => {
 </template>
 
 <style scoped>
-/* App.vueから、input-group, input, textarea, button-group, buttonのスタイルをここに移動 */
+/* ----- 入力グループ ----- */
 .input-group {
   display: flex;
   flex-direction: column;
@@ -139,6 +139,53 @@ textarea {
 textarea {
   margin-top: 10px;
 }
+
+/* ----- フィルターグループ ----- */
+.filter-group {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #fcfcfc;
+}
+.filter-title {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #555;
+}
+.filter-columns {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px 30px; /* 縦と横の隙間 */
+}
+.filter-column {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+.filter-item label {
+  font-weight: bold;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+.filter-item select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background-color: white;
+}
+
+.filter-item label {
+  font-weight: bold;
+  margin-bottom: 5px;
+  font-size: 14px;
+  white-space: nowrap; /* テキストを折り返さない */
+}
+
+/* ----- ボタン ----- */
 .button-group {
   text-align: center;
   margin-top: 20px;
@@ -156,40 +203,31 @@ button {
 button:hover {
   background-color: #0056b3;
 }
-button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-.filter-group {
-  display: flex; /* Flexboxレイアウトに変更 */
-  justify-content: center; /* 中央に配置 */
-  gap: 40px; /* 左右コラム間の隙間 */
-  max-width: 600px;
-  margin: 20px auto;
-  padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-}
-.filter-column {
-  display: flex;
-  flex-direction: column;
-  gap: 15px; /* 各フィルター項目間の隙間 */
-}
 
-.filter-item {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-.filter-item label {
-  font-weight: bold;
-  margin-bottom: 5px;
-  font-size: 14px;
-}
-.filter-item select {
-  width: 200px; /* 横幅を固定 */
-  padding: 8px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
+/* --- ▼ 縦画面用のスマホ対応を追加 ▼ --- */
+
+@media (max-height: 700px) {
+  .filter-group {
+    margin: 10px auto;
+    padding: 10px;
+    gap: 10px;
+  }
+  .input-group {
+    margin-bottom: 10px;
+  }
+  .input-group p {
+    margin-bottom: 10px; /* pタグの余白も詰める */
+  }
+  .button-group {
+    margin-top: 10px;
+  }
+  .filter-title {
+    margin-bottom: 10px;
+  }
+  input,
+  textarea {
+    padding: 8px; /* 入力欄の高さも少し詰める */
+    font-size: 14px;
+  }
 }
 </style>

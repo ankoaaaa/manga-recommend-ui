@@ -115,110 +115,18 @@ const openHistoryModal = () => {
 </template>
 
 <style scoped>
+/* ----- App.vueの基本レイアウト ----- */
 .container {
   max-width: 800px;
   margin: 40px auto;
   padding: 20px;
 }
-.site-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 40px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #e0e0e0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-.site-header h1 {
-  margin: 0;
-  font-size: 24px;
-}
-.site-header .secondary {
-  margin-left: auto;
+
+.results-container {
+  margin-top: 40px;
 }
 
-.input-group {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 20px;
-}
-.input-group p {
-  text-align: center;
-}
-input {
-  width: 100%;
-  max-width: 400px;
-  margin-bottom: 10px;
-  padding: 10px;
-  box-sizing: border-box;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 16px;
-}
-
-/* ▼ ボタンのグループはFlexboxで中央揃えに統一 ▼ */
-.button-group {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-button {
-  padding: 10px 20px;
-  font-size: 16px;
-  color: white;
-  background-color: #007bff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-button.secondary {
-  background-color: #6c757d;
-}
-button:hover {
-  background-color: #0056b3;
-}
-button.secondary:hover {
-  background-color: #5a6268;
-}
-button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-
-.response-area {
-  margin-top: 20px;
-  text-align: left;
-}
-
-/* liのスタイルはApp.vue内の結果表示用 */
-.response-area li {
-  list-style: none;
-  margin-bottom: 15px;
-  padding: 20px;
-  background-color: #ffffff;
-  border: 1px solid #e0e0e0;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-}
-.response-area li:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1);
-}
-.response-area li h3 {
-  margin-top: 0;
-  margin-bottom: 8px;
-}
-.response-area li p {
-  margin-bottom: 0;
-  color: #555;
-}
-
-/* ローディングオーバーレイとローダーのスタイル */
+/* ----- ローディング関連 ----- */
 .loading-overlay {
   position: fixed;
   top: 0;
@@ -231,6 +139,17 @@ button:disabled {
   align-items: center;
   z-index: 1000;
 }
+.loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+.loading-message {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+}
 .loader {
   width: 48px;
   height: 48px;
@@ -241,27 +160,26 @@ button:disabled {
   box-sizing: border-box;
   animation: rotation 1s linear infinite;
 }
-
-.loader-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-}
-
-/* ▼ メッセージのスタイル ▼ */
-.loading-message {
-  font-size: 18px;
-  font-weight: bold;
-  color: #333;
-}
-
 @keyframes rotation {
   0% {
     transform: rotate(0deg);
   }
   100% {
     transform: rotate(360deg);
+  }
+}
+
+/* ----- スマホ対応 ----- */
+@media (max-width: 768px) {
+  .container {
+    margin: 20px 0;
+    padding: 15px;
+  }
+}
+@media (max-height: 700px) {
+  .container {
+    margin: 15px auto; /* 上下marginをさらに詰める */
+    padding: 10px;
   }
 }
 </style>
