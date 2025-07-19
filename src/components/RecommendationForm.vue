@@ -7,6 +7,14 @@ const formData = reactive({
   title2: '',
   title3: '',
   reason: '',
+  userInfo: {
+    // ユーザー自身の情報
+    age: 'all', // all, 10s, 20s, 30s, over40
+    gender: 'all', // all, male, female
+  },
+  demographics: [] as string[],
+  volume: 'all', // all, under_10, under_20,under_30, over_30
+  era: 'all', // all, over_2020y, over_2010y, over_2000y, old
 });
 
 // 親コンポーネント(App.vue)にイベントを通知するための準備
@@ -21,11 +29,69 @@ const handleSubmit = () => {
     alert('好きな漫画を1つ以上入力してください。');
     return;
   }
-  emit('submit', { titles, reason: formData.reason });
+  // 親コンポーネントに、フィルター情報も一緒に渡す
+  emit('submit', {
+    titles,
+    reason: formData.reason,
+    filters: {
+      userInfo: formData.userInfo,
+      demographics: formData.demographics,
+      volume: formData.volume,
+      era: formData.era,
+    },
+  });
 };
 </script>
 
 <template>
+  <div class="input-group"></div>
+
+  <div class="filter-group">
+    <div class="filter-column">
+      <div class="filter-item">
+        <label>あなたの年代:</label>
+        <select v-model="formData.userInfo.age">
+          <option value="all">指定なし</option>
+          <option value="10s">10代</option>
+          <option value="20s">20代</option>
+          <option value="30s">30代</option>
+          <option value="over40">40代以上</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label>あなたの性別:</label>
+        <select v-model="formData.userInfo.gender">
+          <option value="all">指定なし</option>
+          <option value="male">男性</option>
+          <option value="female">女性</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="filter-column">
+      <div class="filter-item">
+        <label>おすすめしてほしい巻数:</label>
+        <select v-model="formData.volume">
+          <option value="all">すべて</option>
+          <option value="under_10">10巻未満</option>
+          <option value="under_20">20巻未満</option>
+          <option value="under_30">30巻未満</option>
+          <option value="over_30">30巻以上</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label>おすすめしてほしい年代:</label>
+        <select v-model="formData.era">
+          <option value="all">すべて</option>
+          <option value="over_2020y">2020年代～</option>
+          <option value="over_2010y">2010年代～</option>
+          <option value="over_2000y">2000年代～</option>
+          <option value="old">～2000年代</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
   <div class="input-group">
     <p>好きな漫画のタイトルを3つまで入力してください</p>
     <input v-model="formData.title1" type="text" placeholder="例: 呪術廻戦" />
@@ -93,5 +159,37 @@ button:hover {
 button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
+}
+.filter-group {
+  display: flex; /* Flexboxレイアウトに変更 */
+  justify-content: center; /* 中央に配置 */
+  gap: 40px; /* 左右コラム間の隙間 */
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+.filter-column {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* 各フィルター項目間の隙間 */
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.filter-item label {
+  font-weight: bold;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+.filter-item select {
+  width: 200px; /* 横幅を固定 */
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
 }
 </style>

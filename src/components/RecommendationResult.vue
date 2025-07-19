@@ -3,6 +3,8 @@ interface Manga {
   title: string;
   description: string;
   interpretation?: string;
+  volumeCount?: number;
+  publishedYear?: number;
 }
 interface Category {
   categoryTitle: string;
@@ -24,6 +26,10 @@ defineProps<{
       <ul>
         <li v-for="manga in category.recommendations" :key="manga.title">
           <h3>{{ manga.title }}</h3>
+          <div class="manga-meta">
+            <span v-if="manga.volumeCount">全{{ manga.volumeCount }}</span>
+            <span v-if="manga.publishedYear">{{ manga.publishedYear }}～</span>
+          </div>
           <p>{{ manga.description }}</p>
           <div v-if="manga.interpretation" class="interpretation-box">
             <p><strong>AIの推しポイント:</strong> {{ manga.interpretation }}</p>
@@ -81,5 +87,14 @@ li p {
   margin: 0;
   font-size: 14px;
   color: #155724; /* 少し濃い緑色 */
+}
+
+.manga-meta {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 10px;
+}
+.manga-meta span {
+  margin-right: 15px;
 }
 </style>

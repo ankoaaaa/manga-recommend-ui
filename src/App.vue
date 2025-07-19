@@ -13,6 +13,7 @@ const state = reactive({
   historyList: [] as HistoryItem[],
   isLoading: false,
   isHistoryModalOpen: false,
+  loadingMessage: '',
 });
 
 const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/api/v1/recommendations`;
@@ -26,6 +27,7 @@ const handleGetRecommendations = async (formData: {
   titles: string[];
   reason: string;
 }) => {
+  state.loadingMessage = 'AIがあなたにぴったりの漫画を選んでいます...';
   state.isLoading = true;
   state.latestResponse = null;
   try {
@@ -93,6 +95,13 @@ const openHistoryModal = () => {
         v-if="state.latestResponse.categories"
         :categories="state.latestResponse.categories"
       />
+    </div>
+  </div>
+
+  <div v-if="state.isLoading" class="loading-overlay">
+    <div class="loader-container">
+      <span class="loader"></span>
+      <p class="loading-message">{{ state.loadingMessage }}</p>
     </div>
   </div>
 
@@ -231,6 +240,20 @@ button:disabled {
   display: inline-block;
   box-sizing: border-box;
   animation: rotation 1s linear infinite;
+}
+
+.loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+/* ▼ メッセージのスタイル ▼ */
+.loading-message {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
 }
 
 @keyframes rotation {
